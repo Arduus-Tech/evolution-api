@@ -5209,6 +5209,12 @@ export class BaileysStartupService extends ChannelStartupService {
     if (messageRaw.message.extendedTextMessage) {
       messageRaw.messageType = 'conversation';
       messageRaw.message.conversation = messageRaw.message.extendedTextMessage.text;
+      // Reply IDs, quoted content and mentions live on the content node.
+      // Preserve them before flattening, together with existing device metadata.
+      const quotedContext = messageRaw.message.extendedTextMessage.contextInfo;
+      if (quotedContext) {
+        messageRaw.contextInfo = { ...(messageRaw.contextInfo ?? {}), ...quotedContext };
+      }
       delete messageRaw.message.extendedTextMessage;
     }
 
@@ -5710,13 +5716,9 @@ export class BaileysStartupService extends ChannelStartupService {
       if (!message.pushName) {
         if (messageKey.fromMe) {
           message.pushName = 'Você';
-        } else if (message.contextInfo) {
-          const contextInfo = message.contextInfo as { participant?: string };
-          if (contextInfo.participant) {
-            message.pushName = contextInfo.participant.split('@')[0];
-          } else if (messageKey.participant) {
-            message.pushName = messageKey.participant.split('@')[0];
-          }
+        } else if (messageKey.participant) {
+          // contextInfo.participant identifies the QUOTED author, not the sender.
+          message.pushName = messageKey.participant.split('@')[0];
         }
       }
 

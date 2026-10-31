@@ -34,7 +34,9 @@ lerna-debug.log*
 # Project related
 /instances/*
 !/instances/.gitkeep
-/test/
+/test/*
+!/test/reply-context.test.mjs
+!/test/load-message-methods.mjs
 /src/env.yml
 /store
 *.env
