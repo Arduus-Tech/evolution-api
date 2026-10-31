@@ -1,0 +1,26 @@
+name: Assistant reply context
+on:
+  pull_request:
+    branches: [assistant-2.4.0-rc2]
+  push:
+    branches: [assistant-2.4.0-rc2, codex/assistant-reply-context]
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://test:test@localhost:5432/test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --test test/reply-context.test.mjs
+      - run: npm run lint:check
+      - run: npm run db:generate
+      - run: npm run build
